@@ -9,6 +9,7 @@
 }
 
 .patient-dark-hero {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
@@ -27,6 +28,45 @@
   display: grid;
   justify-items: start;
   max-width: 650px;
+}
+
+.patient-hero-quick-actions {
+  position: absolute;
+  left: clamp(24px, 7vw, 88px);
+  bottom: clamp(24px, 5vw, 48px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.patient-hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  border: 1px solid #c6d8f6;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: 850;
+  box-shadow: 0 14px 32px rgba(15, 46, 89, 0.12);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.patient-hero-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 38px rgba(15, 46, 89, 0.18);
+}
+
+.patient-hero-action.primary {
+  border-color: #0b63ce;
+  color: #ffffff;
+  background: #0b63ce;
+}
+
+.patient-hero-action.secondary {
+  color: var(--primary-dark);
+  background: #ffffff;
 }
 
 .patient-dark-pill {
@@ -378,4 +418,22 @@
 .patient-dark-footer button:hover {
   border-color: #a8c7ff;
   color: var(--primary);
+}
+
+@media (max-width: 760px) {
+  .patient-dark-hero {
+    align-content: space-between;
+    min-height: 460px;
+  }
+
+  .patient-hero-quick-actions {
+    position: static;
+    align-self: end;
+    margin-top: 28px;
+  }
+
+  .patient-hero-action {
+    flex: 1 1 170px;
+    min-width: 0;
+  }
 }

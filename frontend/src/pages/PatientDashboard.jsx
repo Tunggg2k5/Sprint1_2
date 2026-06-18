@@ -1,5 +1,6 @@
+import { CalendarDays, CalendarPlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Feedback from "../components/Feedback.jsx";
 import PatientAppointmentList from "../components/patient/PatientAppointmentList.jsx";
 import PatientInvoiceList from "../components/patient/PatientInvoiceList.jsx";
@@ -266,6 +267,16 @@ function PatientHome() {
     <section className="patient-dark-hero" id="home">
       <div className="patient-dark-hero-copy">
         <h1>Chăm sóc nụ cười của bạn</h1>
+      </div>
+      <div className="patient-hero-quick-actions" aria-label="Tác vụ nhanh">
+        <Link className="patient-hero-action primary" to="/dashboard?tab=booking">
+          <CalendarPlus size={20} />
+          <span>Đặt lịch</span>
+        </Link>
+        <Link className="patient-hero-action secondary" to="/dashboard?tab=appointments">
+          <CalendarDays size={20} />
+          <span>Xem lịch hiện tại</span>
+        </Link>
       </div>
     </section>
   );
