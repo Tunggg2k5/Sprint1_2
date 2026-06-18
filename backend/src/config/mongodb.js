@@ -1,6 +1,5 @@
 import { MongoClient, ObjectId } from "mongodb";
 import { env } from "./environment.js";
-import { COLLECTION_INDEXES } from "../models/collections.js";
 
 let client;
 let database;
@@ -20,22 +19,7 @@ export async function connectMongoDB(uri = env.MONGODB_URI) {
   });
   await client.connect();
   database = client.db();
-  await ensureIndexes(database);
   return database;
-}
-
-async function ensureIndexes(db) {
-  await Promise.all(
-    Object.entries(COLLECTION_INDEXES).flatMap(([collectionName, indexes]) =>
-      indexes.map(async ({ key, options }) => {
-        try {
-          await db.collection(collectionName).createIndex(key, options);
-        } catch (error) {
-          if (![85, 86].includes(error.code)) throw error;
-        }
-      })
-    )
-  );
 }
 
 export function getDatabase() {

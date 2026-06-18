@@ -18,7 +18,7 @@ import { usePublicBootstrap } from "../utils/usePublicBootstrap.js";
 const serviceToneCycle = ["implant", "cosmetic", "ortho", "general"];
 
 function stripServiceDurationText(description = "") {
-  return description
+  return String(description || "")
     .replace(/,?\s*thời lượng(?: dự kiến)?\s*\d+\s*phút\.?/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();

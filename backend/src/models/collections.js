@@ -1,15 +1,17 @@
 export const COLLECTIONS = Object.freeze({
   users: "users",
   notifications: "notifications",
-  services: "services",
-  rooms: "rooms",
+  services: "dentalservices",
+  rooms: "clinicrooms",
   reviews: "reviews",
-  consultations: "consultations",
+  consultations: "consultationrequests",
   appointments: "appointments",
   invoices: "invoices",
-  treatmentRecords: "treatmentRecords",
-  treatmentPlans: "treatmentPlans",
-  clinicSettings: "clinicSettings"
+  treatmentRecords: "treatmentrecords",
+  treatmentPlans: "treatmentplans",
+  clinicSettings: "clinicsettings",
+  dentists: "dentists",
+  nurses: "nurses"
 });
 
 export const COLLECTION_INDEXES = Object.freeze({

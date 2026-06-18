@@ -12,17 +12,16 @@ Project cu khong bi sua. Giao dien frontend duoc canh theo giao dien cu cua Smil
 ```bash
 cd dental-appointment-training/backend
 npm install
-npm run seed
 npm run dev
 ```
 
 Backend chay tai:
 
 ```text
-http://localhost:4000
+http://localhost:4100
 ```
 
-Backend dang dung MongoDB Atlas qua file `backend/.env`, database `das`, giong project goc.
+Backend dang dung MongoDB Atlas qua file `backend/.env`, database `das`, giong project goc. Project training chi doc va dung du lieu hien co tu database nay, khong co file seed rieng.
 
 ## Run frontend
 
@@ -35,32 +34,14 @@ npm run dev
 Frontend chay tai:
 
 ```text
-http://localhost:5173
+http://localhost:5174
 ```
 
-Frontend dung Vite proxy `/api` sang backend `http://127.0.0.1:4000`, giong project goc.
+Frontend dung Vite proxy `/api` sang backend `http://127.0.0.1:4100`, de co the chay song song voi project goc.
 
-## Demo account
+## Data
 
-```text
-Phone: 0911000001
-Password: Password123!
-Role: patient
-```
-
-## Seed data
-
-`npm run seed` tao lai bo du lieu mau sach tren Atlas database `das`:
-
-- 1 patient co the dang nhap.
-- 1 thong bao chua doc.
-- 3 bac si.
-- 3 phong kham.
-- 4 dich vu.
-- Review hien thi o trang guest.
-- Lich hen patient.
-- Hoa don patient.
-- Ho so dieu tri va ke hoach dieu tri.
+Project nay dung truc tiep du lieu trong MongoDB Atlas database `das`. Khong chay seed va khong tao du lieu mau rieng de tranh lam thay doi database cua project goc.
 
 ## API flow
 
