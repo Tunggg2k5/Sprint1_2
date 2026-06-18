@@ -19,8 +19,10 @@ npm run dev
 Backend chay tai:
 
 ```text
-http://localhost:4100
+http://localhost:4000
 ```
+
+Backend dang dung MongoDB Atlas qua file `backend/.env`, database `das`, giong project goc.
 
 ## Run frontend
 
@@ -33,10 +35,10 @@ npm run dev
 Frontend chay tai:
 
 ```text
-http://localhost:5174
+http://localhost:5173
 ```
 
-Frontend dung Vite proxy `/api` sang backend `http://localhost:4100`.
+Frontend dung Vite proxy `/api` sang backend `http://127.0.0.1:4000`, giong project goc.
 
 ## Demo account
 
@@ -48,7 +50,7 @@ Role: patient
 
 ## Seed data
 
-`npm run seed` tao lai bo du lieu mau sach:
+`npm run seed` tao lai bo du lieu mau sach tren Atlas database `das`:
 
 - 1 patient co the dang nhap.
 - 1 thong bao chua doc.
