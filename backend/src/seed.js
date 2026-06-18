@@ -18,6 +18,7 @@ async function upsertUser(phone, data) {
   const document = {
     ...data,
     phone,
+    email: data.email || `${phone}@training.local`,
     status: data.status || "active",
     passwordHash,
     seedKey,

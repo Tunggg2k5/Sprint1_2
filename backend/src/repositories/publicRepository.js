@@ -3,19 +3,19 @@ import { COLLECTIONS } from "../models/collections.js";
 import { findMany, findOne, insertOne } from "./mongoRepository.js";
 
 export function findActiveServices() {
-  return findMany(COLLECTIONS.services, { isActive: true }, { sort: { createdAt: -1 } });
+  return findMany(COLLECTIONS.services, { isActive: true, seedKey: "training-seed" }, { sort: { createdAt: -1 } });
 }
 
 export function findActiveDentists() {
-  return findMany(COLLECTIONS.users, { role: "dentist", status: "active" }, { sort: { createdAt: -1 } });
+  return findMany(COLLECTIONS.users, { role: "dentist", status: "active", seedKey: "training-seed" }, { sort: { createdAt: -1 } });
 }
 
 export function findActiveRooms() {
-  return findMany(COLLECTIONS.rooms, { isActive: true }, { sort: { name: 1 } });
+  return findMany(COLLECTIONS.rooms, { isActive: true, seedKey: "training-seed" }, { sort: { name: 1 } });
 }
 
 export function findLatestReviews() {
-  return findMany(COLLECTIONS.reviews, {}, { sort: { createdAt: -1 }, limit: 12 });
+  return findMany(COLLECTIONS.reviews, { seedKey: "training-seed" }, { sort: { createdAt: -1 }, limit: 12 });
 }
 
 export function findPublicClinic() {
