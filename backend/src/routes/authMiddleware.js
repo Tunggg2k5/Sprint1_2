@@ -10,10 +10,15 @@ export async function requireAuth(req, res, next) {
   }
 }
 
-export function requirePatient(req, res, next) {
-  if (req.user?.role !== "patient") {
-    res.status(403).json({ message: "Chỉ tài khoản bệnh nhân được sử dụng chức năng này." });
-    return;
-  }
-  next();
+export function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user?.role)) {
+      res.status(403).json({ message: "Tai khoan khong co quyen su dung chuc nang nay." });
+      return;
+    }
+    next();
+  };
 }
+
+export const requirePatient = requireRole("patient");
+export const requireReceptionist = requireRole("receptionist");

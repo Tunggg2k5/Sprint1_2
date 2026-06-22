@@ -6,12 +6,14 @@ import BookingPage from "../pages/BookingPage.jsx";
 import PatientDashboard from "../pages/PatientDashboard.jsx";
 import ProfilePage from "../pages/ProfilePage.jsx";
 import PublicHome from "../pages/PublicHome.jsx";
+import ReceptionistDashboard from "../pages/ReceptionistDashboard.jsx";
 
 function DashboardRouter() {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === "patient") return <PatientDashboard />;
+  if (user.role === "receptionist") return <ReceptionistDashboard />;
   return <Navigate to="/" replace />;
 }
 

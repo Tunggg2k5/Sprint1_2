@@ -2,9 +2,12 @@ import {
   Bell,
   CalendarDays,
   CalendarPlus,
+  ClipboardList,
   DoorOpen,
   FileText,
   Home,
+  LockKeyhole,
+  PhoneCall,
   ReceiptText,
   Stethoscope
 } from "lucide-react";
@@ -20,16 +23,29 @@ import NotificationPanel from "./user/NotificationPanel.jsx";
 import ProfileDropdown from "./user/ProfileDropdown.jsx";
 
 function navForRole(role) {
-  if (role !== "patient") return [];
+  if (role === "patient") {
+    return [
+      { id: "home", to: "/dashboard?tab=home", label: "Trang chủ", icon: Home },
+      { id: "services", to: "/dashboard?tab=home#services", label: "Dịch vụ", icon: Stethoscope, section: "services" },
+      { id: "booking", to: "/dashboard?tab=booking", label: "Đặt lịch", icon: CalendarPlus },
+      { id: "appointments", to: "/dashboard?tab=appointments", label: "Lịch hẹn", icon: CalendarDays },
+      { id: "records", to: "/dashboard?tab=records", label: "Hồ sơ điều trị", icon: FileText },
+      { id: "invoices", to: "/dashboard?tab=invoices", label: "Hóa đơn", icon: ReceiptText }
+    ];
+  }
 
-  return [
-    { id: "home", to: "/dashboard?tab=home", label: "Trang chủ", icon: Home },
-    { id: "services", to: "/dashboard?tab=home#services", label: "Dịch vụ", icon: Stethoscope, section: "services" },
-    { id: "booking", to: "/dashboard?tab=booking", label: "Đặt lịch", icon: CalendarPlus },
-    { id: "appointments", to: "/dashboard?tab=appointments", label: "Lịch hẹn", icon: CalendarDays },
-    { id: "records", to: "/dashboard?tab=records", label: "Hồ sơ điều trị", icon: FileText },
-    { id: "invoices", to: "/dashboard?tab=invoices", label: "Hóa đơn", icon: ReceiptText }
-  ];
+  if (role === "receptionist") {
+    return [
+      { id: "appointments", to: "/dashboard?tab=appointments", label: "Lịch hẹn", icon: ClipboardList },
+      { id: "schedule", to: "/dashboard?tab=schedule", label: "Lịch khám", icon: CalendarDays },
+      { id: "payments", to: "/dashboard?tab=payments", label: "Hóa đơn", icon: ReceiptText },
+      { id: "booking", to: "/dashboard?tab=booking", label: "Đặt lịch hộ", icon: CalendarPlus },
+      { id: "accounts", to: "/dashboard?tab=accounts", label: "Tài khoản", icon: LockKeyhole },
+      { id: "consultations", to: "/dashboard?tab=consultations", label: "Tư vấn", icon: PhoneCall }
+    ];
+  }
+
+  return [];
 }
 
 export default function AppLayout() {
@@ -51,7 +67,8 @@ export default function AppLayout() {
   const accountButtonRef = useRef(null);
   const accountPopoverRef = useRef(null);
 
-  const activeTab = new URLSearchParams(location.search).get("tab") || "home";
+  const defaultTab = user?.role === "receptionist" ? "appointments" : "home";
+  const activeTab = new URLSearchParams(location.search).get("tab") || defaultTab;
   const unreadCount = notifications.filter((item) => !item.isRead).length;
   const userInitial = useMemo(() => user?.fullName?.trim()?.[0]?.toUpperCase() || "S", [user?.fullName]);
 
@@ -206,12 +223,16 @@ export default function AppLayout() {
     <div className={`app-shell top-nav-shell role-shell role-${user?.role || "guest"}`}>
       <Feedback error={feedback.error} message={feedback.message} onClear={clearFeedback} />
       <header className="app-topnav sticky-top">
-        <Link className="top-brand" onClick={scrollPageToTop} to={user?.role === "patient" ? "/dashboard?tab=home" : "/"}>
+        <Link
+          className="top-brand"
+          onClick={scrollPageToTop}
+          to={user?.role === "patient" ? "/dashboard?tab=home" : user ? "/dashboard" : "/"}
+        >
           <DoorOpen size={24} />
           <span>SmileCare</span>
         </Link>
 
-        <nav className="top-nav-list" aria-label="Điều hướng bệnh nhân">
+        <nav className="top-nav-list" aria-label="Điều hướng chính">
           {items.map((item) => {
             const Icon = item.icon;
             const active =

@@ -7,6 +7,7 @@ export const COLLECTIONS = Object.freeze({
   consultations: "consultationrequests",
   appointments: "appointments",
   invoices: "invoices",
+  payments: "payments",
   treatmentRecords: "treatmentrecords",
   treatmentPlans: "treatmentplans",
   clinicSettings: "clinicsettings",

@@ -7,6 +7,7 @@ import { env } from "./config/environment.js";
 import { connectMongoDB } from "./config/mongodb.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
+import receptionRoutes from "./routes/receptionRoutes.js";
 
 export const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api", publicRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/patient", patientRoutes);
+app.use("/api/reception", receptionRoutes);
 
 async function startServer() {
   await connectMongoDB();
