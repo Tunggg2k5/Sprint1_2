@@ -7,7 +7,7 @@ import PatientInvoiceList from "../components/patient/PatientInvoiceList.jsx";
 import PatientTreatmentRecords from "../components/patient/PatientTreatmentRecords.jsx";
 import { api, getErrorMessage } from "../utils/api.js";
 import { clinicDateInput, getAppointmentSlot } from "../utils/appointmentSlots.js";
-import { todayInput } from "../utils/format.js";
+import { formatMoney, todayInput } from "../utils/format.js";
 import { usePublicBootstrap } from "../utils/usePublicBootstrap.js";
 import BookingPage, { bookingSlotOptions, maxBookingDate, toClinicIso } from "./BookingPage.jsx";
 
@@ -295,6 +295,7 @@ function PatientServices({ services }) {
             <div>
               <h3>{service.name}</h3>
               <p>{service.description || "Thông tin dịch vụ đang được cập nhật."}</p>
+              <strong>{servicePriceLabel(service)}</strong>
             </div>
           </article>
         ))}
@@ -302,6 +303,16 @@ function PatientServices({ services }) {
       </div>
     </section>
   );
+}
+
+function servicePriceLabel(service) {
+  const min = Number(service.priceMin ?? service.minPrice ?? service.priceFrom ?? service.price ?? 0);
+  const max = Number(service.priceMax ?? service.maxPrice ?? service.priceTo ?? service.price ?? 0);
+  const price = Number(service.price || 0);
+
+  if (min > 0 && max > 0 && min !== max) return `Khoảng giá: ${formatMoney(min)} - ${formatMoney(max)}`;
+  if (price > 0 || min > 0 || max > 0) return `Giá tham khảo: ${formatMoney(price || min || max)}`;
+  return "Giá sẽ được lễ tân tư vấn";
 }
 
 function canModifyAppointment(appointment) {

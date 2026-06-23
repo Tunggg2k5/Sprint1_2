@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes.js";
 import { corsMiddleware } from "./config/cors.js";
 import { env } from "./config/environment.js";
 import { connectMongoDB } from "./config/mongodb.js";
+import { errorMiddleware, notFoundMiddleware } from "./middlewares/errorMiddleware.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
 import receptionRoutes from "./routes/receptionRoutes.js";
@@ -24,6 +25,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/reception", receptionRoutes);
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
 
 async function startServer() {
   await connectMongoDB();

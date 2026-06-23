@@ -53,6 +53,24 @@ export async function changePassword(req, res) {
   }
 }
 
+export async function requestPasswordReset(req, res) {
+  try {
+    const result = await authService.requestPasswordReset(req.body);
+    res.json(result);
+  } catch (error) {
+    sendError(res, error);
+  }
+}
+
+export async function resetPasswordWithOtp(req, res) {
+  try {
+    const result = await authService.resetPasswordWithOtp(req.body);
+    res.json(result);
+  } catch (error) {
+    sendError(res, error);
+  }
+}
+
 export async function getNotifications(req, res) {
   try {
     const notifications = await authService.getNotifications(req.user._id);

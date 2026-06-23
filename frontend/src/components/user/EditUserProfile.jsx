@@ -1,4 +1,4 @@
-import { Save, Settings } from "lucide-react";
+import { Mail, Save, Settings } from "lucide-react";
 
 const genderOptions = [
   { value: "unknown", label: "Chưa chọn" },
@@ -22,6 +22,18 @@ export default function EditUserProfile({ form, onCancel, onChange, onSubmit }) 
         <label className="field">
           <span>Số điện thoại</span>
           <input type="tel" value={form.phone} onChange={(event) => onChange({ ...form, phone: event.target.value })} required />
+        </label>
+        <label className="field">
+          <span>Email khôi phục mật khẩu</span>
+          <div className="input-icon">
+            <Mail size={18} />
+            <input
+              type="email"
+              value={form.email || ""}
+              onChange={(event) => onChange({ ...form, email: event.target.value })}
+              placeholder="Cập nhật sau khi đăng ký"
+            />
+          </div>
         </label>
         <div className="form-grid account-form-grid">
           <label className="field">

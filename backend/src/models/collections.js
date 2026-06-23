@@ -1,5 +1,6 @@
 export const COLLECTIONS = Object.freeze({
   users: "users",
+  passwordResetOtps: "passwordresetotps",
   notifications: "notifications",
   services: "dentalservices",
   rooms: "clinicrooms",

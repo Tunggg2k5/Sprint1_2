@@ -33,6 +33,9 @@ function getServiceCards(services) {
     _id: service._id,
     name: service.name,
     description: stripServiceDurationText(service.description) || "Thông tin dịch vụ đang được cập nhật.",
+    price: service.price,
+    priceMin: service.priceMin ?? service.minPrice ?? service.priceFrom ?? service.price,
+    priceMax: service.priceMax ?? service.maxPrice ?? service.priceTo ?? service.price,
     accent: serviceToneCycle[index % serviceToneCycle.length]
   }));
 }

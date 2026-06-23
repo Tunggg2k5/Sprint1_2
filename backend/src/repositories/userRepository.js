@@ -6,6 +6,10 @@ export function findUserByPhone(phone) {
   return findOne(COLLECTIONS.users, { phone });
 }
 
+export function findUserByEmail(email) {
+  return findOne(COLLECTIONS.users, { email });
+}
+
 export function findUsersByRole(role) {
   return findMany(COLLECTIONS.users, { role, status: "active" }, { sort: { createdAt: -1 } });
 }
@@ -24,6 +28,35 @@ export function updateUserProfile(userId, profile) {
 
 export function updatePasswordHash(userId, passwordHash) {
   return updateById(COLLECTIONS.users, userId, { passwordHash });
+}
+
+export function createPasswordResetOtp(data) {
+  return insertOne(COLLECTIONS.passwordResetOtps, data);
+}
+
+export function findUsablePasswordResetOtp({ userId, email, otpHash }) {
+  return getCollection(COLLECTIONS.passwordResetOtps).findOne({
+    user: toObjectId(userId),
+    email,
+    otpHash,
+    usedAt: null,
+    expiresAt: { $gt: new Date() }
+  });
+}
+
+export function markPasswordResetOtpUsed(otpId) {
+  return getCollection(COLLECTIONS.passwordResetOtps).findOneAndUpdate(
+    { _id: toObjectId(otpId) },
+    { $set: { usedAt: new Date(), updatedAt: new Date() } },
+    { returnDocument: "after" }
+  );
+}
+
+export function expirePasswordResetOtps(userId) {
+  return getCollection(COLLECTIONS.passwordResetOtps).updateMany(
+    { user: toObjectId(userId), usedAt: null },
+    { $set: { usedAt: new Date(), updatedAt: new Date() } }
+  );
 }
 
 export function findNotificationsByUser(userId) {

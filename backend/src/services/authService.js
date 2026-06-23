@@ -1,6 +1,9 @@
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { env } from "../config/environment.js";
 import * as userRepository from "../repositories/userRepository.js";
+import { sendPasswordResetOtp } from "../utils/email.js";
+import { generateOtp, hashOtp, otpExpiresAt } from "../utils/otp.js";
+import { assertValidPassword, comparePassword, hashPassword } from "../utils/password.js";
 
 const jwtSecret = process.env.JWT_SECRET || "training-secret-change-me";
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "7d";
@@ -25,12 +28,14 @@ function normalizePhone(phone = "") {
   return String(phone).replace(/\s/g, "");
 }
 
+function normalizeEmail(email = "") {
+  return String(email).trim().toLowerCase();
+}
+
 export async function register(body) {
   const phone = normalizePhone(body.phone);
   if (!phone) throw createError("Số điện thoại là bắt buộc.");
-  if (!body.password || body.password.length < 8) {
-    throw createError("Mật khẩu phải có ít nhất 8 ký tự.");
-  }
+  assertValidPassword(body.password);
 
   const existingUser = await userRepository.findUserByPhone(phone);
   if (existingUser) throw createError("Số điện thoại đã tồn tại.", 409);
@@ -39,13 +44,14 @@ export async function register(body) {
   const user = await userRepository.createUser({
     fullName: body.fullName?.trim() || `Bệnh nhân ${suffix}`,
     phone,
+    email: "",
     role: "patient",
     status: "active",
     gender: body.gender || "unknown",
     address: body.address || "",
     bio: body.bio || "",
     avatarUrl: "",
-    passwordHash: await bcrypt.hash(body.password, 10)
+    passwordHash: await hashPassword(body.password)
   });
 
   await userRepository.createNotification({
@@ -67,7 +73,7 @@ export async function login({ phone, password }) {
     throw createError("Số điện thoại hoặc mật khẩu không đúng.", 401);
   }
 
-  const isValidPassword = await bcrypt.compare(password || "", user.passwordHash);
+  const isValidPassword = await comparePassword(password, user.passwordHash);
   if (!isValidPassword) {
     throw createError("Số điện thoại hoặc mật khẩu không đúng.", 401);
   }
@@ -98,8 +104,17 @@ export async function updateProfile(userId, body) {
     throw createError("Số điện thoại đã được tài khoản khác sử dụng.", 409);
   }
 
+  const email = normalizeEmail(body.email ?? currentUser.email ?? "");
+  if (email) {
+    const existingByEmail = await userRepository.findUserByEmail(email);
+    if (existingByEmail && existingByEmail._id.toString() !== currentUser._id.toString()) {
+      throw createError("Email đã được tài khoản khác sử dụng.", 409);
+    }
+  }
+
   const profile = {
     fullName: body.fullName,
+    email,
     phone,
     gender: body.gender || "unknown",
     address: body.address || "",
@@ -119,17 +134,74 @@ export async function changePassword(userId, body) {
   const user = await userRepository.findUserById(userId);
   if (!user) throw createError("Không tìm thấy người dùng.", 404);
 
-  const isValidPassword = await bcrypt.compare(body.currentPassword || "", user.passwordHash);
+  const isValidPassword = await comparePassword(body.currentPassword, user.passwordHash);
   if (!isValidPassword) {
     throw createError("Mật khẩu hiện tại không đúng.", 400);
   }
 
-  if (!body.newPassword || body.newPassword.length < 8) {
-    throw createError("Mật khẩu mới phải có ít nhất 8 ký tự.", 400);
+  assertValidPassword(body.newPassword);
+
+  await userRepository.updatePasswordHash(userId, await hashPassword(body.newPassword));
+  return { message: "Đã đổi mật khẩu." };
+}
+
+export async function requestPasswordReset(body) {
+  const email = normalizeEmail(body.email);
+  if (!email) throw createError("Email là bắt buộc.");
+
+  const neutralMessage = "Nếu email tồn tại trong hệ thống, SmileCare sẽ gửi mã OTP đặt lại mật khẩu.";
+  const user = await userRepository.findUserByEmail(email);
+  if (!user || user.status !== "active") {
+    return { message: neutralMessage };
   }
 
-  await userRepository.updatePasswordHash(userId, await bcrypt.hash(body.newPassword, 10));
-  return { message: "Đã đổi mật khẩu." };
+  const otp = generateOtp();
+  await userRepository.createPasswordResetOtp({
+    user: user._id,
+    email,
+    otpHash: hashOtp(otp),
+    expiresAt: otpExpiresAt(env.PASSWORD_RESET_OTP_TTL_MINUTES),
+    usedAt: null
+  });
+
+  const mail = await sendPasswordResetOtp({
+    to: email,
+    fullName: user.fullName,
+    otp,
+    expiresInMinutes: env.PASSWORD_RESET_OTP_TTL_MINUTES
+  });
+
+  return {
+    message: neutralMessage,
+    emailSent: mail.sent,
+    ...(env.MAIL_DEV_RETURN_OTP ? { devOtp: otp } : {})
+  };
+}
+
+export async function resetPasswordWithOtp(body) {
+  const email = normalizeEmail(body.email);
+  const otp = String(body.otp || "").trim();
+  if (!email) throw createError("Email là bắt buộc.");
+  if (!/^\d{6}$/.test(otp)) throw createError("OTP gồm 6 chữ số.");
+  assertValidPassword(body.newPassword);
+
+  const user = await userRepository.findUserByEmail(email);
+  if (!user || user.status !== "active") {
+    throw createError("Email hoặc OTP không hợp lệ.", 400);
+  }
+
+  const resetOtp = await userRepository.findUsablePasswordResetOtp({
+    userId: user._id,
+    email,
+    otpHash: hashOtp(otp)
+  });
+  if (!resetOtp) throw createError("OTP không hợp lệ hoặc đã hết hạn.", 400);
+
+  await userRepository.updatePasswordHash(user._id, await hashPassword(body.newPassword));
+  await userRepository.markPasswordResetOtpUsed(resetOtp._id);
+  await userRepository.expirePasswordResetOtps(user._id);
+
+  return { message: "Đã đặt lại mật khẩu. Vui lòng đăng nhập bằng mật khẩu mới." };
 }
 
 export function getNotifications(userId) {

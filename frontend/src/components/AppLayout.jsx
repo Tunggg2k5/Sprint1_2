@@ -16,7 +16,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Feedback from "../components/Feedback.jsx";
 import { useAuth } from "../redux/AuthContext.jsx";
 import { api, getErrorMessage } from "../utils/api.js";
-import { firstError, validateName, validatePassword, validatePhone } from "../utils/validation.js";
+import { firstError, validateEmail, validateName, validatePassword, validatePhone } from "../utils/validation.js";
 import ChangeUserPassword from "./user/ChangeUserPassword.jsx";
 import EditUserProfile from "./user/EditUserProfile.jsx";
 import NotificationPanel from "./user/NotificationPanel.jsx";
@@ -58,7 +58,7 @@ export default function AppLayout() {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
-  const [profileForm, setProfileForm] = useState({ fullName: "", phone: "", gender: "unknown", address: "", bio: "" });
+  const [profileForm, setProfileForm] = useState({ fullName: "", email: "", phone: "", gender: "unknown", address: "", bio: "" });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
   const [feedback, setFeedback] = useState({ message: "", error: "" });
   const fileInputRef = useRef(null);
@@ -76,13 +76,14 @@ export default function AppLayout() {
     if (!user) return;
     setProfileForm({
       fullName: user.fullName || "",
+      email: user.email || "",
       phone: user.phone || "",
       gender: user.gender || "unknown",
       address: user.address || "",
       bio: user.bio || ""
     });
     loadNotifications();
-  }, [user?._id, user?.fullName, user?.phone, user?.gender, user?.address, user?.bio]);
+  }, [user?._id, user?.fullName, user?.email, user?.phone, user?.gender, user?.address, user?.bio]);
 
   useEffect(() => {
     setShowNotifications(false);
@@ -142,7 +143,11 @@ export default function AppLayout() {
 
   async function saveProfile(event) {
     event.preventDefault();
-    const validationError = firstError(validateName(profileForm.fullName), validatePhone(profileForm.phone));
+    const validationError = firstError(
+      validateName(profileForm.fullName),
+      profileForm.email ? validateEmail(profileForm.email) : "",
+      validatePhone(profileForm.phone)
+    );
     if (validationError) {
       setFeedback({ message: "", error: validationError });
       return;
