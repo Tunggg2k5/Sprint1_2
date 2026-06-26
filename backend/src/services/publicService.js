@@ -1,5 +1,5 @@
 import * as publicRepository from "../repositories/publicRepository.js";
-import { createError } from "./authService.js";
+import { assertRequired, assertValidPhone } from "../utils/validation.js";
 
 export async function getBootstrap() {
   const [services, dentists, rooms, reviews, clinic] = await Promise.all([
@@ -20,12 +20,13 @@ export async function getBootstrap() {
 }
 
 export async function createConsultation(body) {
-  if (!body.fullName?.trim()) throw createError("Họ và tên là bắt buộc.");
-  if (!body.phone?.trim()) throw createError("Số điện thoại là bắt buộc.");
+  const fullName = String(body.fullName || "").trim();
+  assertRequired(fullName, "Họ và tên");
+  const phone = assertValidPhone(body.phone);
 
   await publicRepository.createConsultation({
-    fullName: body.fullName.trim(),
-    phone: String(body.phone).replace(/\s/g, ""),
+    fullName,
+    phone,
     service: body.service || null,
     message: body.message || "",
     status: "new"

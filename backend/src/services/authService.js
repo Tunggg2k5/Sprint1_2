@@ -4,6 +4,7 @@ import * as userRepository from "../repositories/userRepository.js";
 import { sendPasswordResetOtp } from "../utils/email.js";
 import { generateOtp, hashOtp, otpExpiresAt } from "../utils/otp.js";
 import { assertValidPassword, comparePassword, hashPassword } from "../utils/password.js";
+import { assertRequired, assertValidEmail, assertValidOtp, assertValidPhone, normalizePhone } from "../utils/validation.js";
 
 const jwtSecret = process.env.JWT_SECRET || "training-secret-change-me";
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "7d";
@@ -24,17 +25,8 @@ function signToken(user) {
   return jwt.sign({ sub: user._id.toString(), role: user.role }, jwtSecret, { expiresIn: jwtExpiresIn });
 }
 
-function normalizePhone(phone = "") {
-  return String(phone).replace(/\s/g, "");
-}
-
-function normalizeEmail(email = "") {
-  return String(email).trim().toLowerCase();
-}
-
 export async function register(body) {
-  const phone = normalizePhone(body.phone);
-  if (!phone) throw createError("Số điện thoại là bắt buộc.");
+  const phone = assertValidPhone(body.phone);
   assertValidPassword(body.password);
 
   const existingUser = await userRepository.findUserByPhone(phone);
@@ -98,13 +90,13 @@ export async function updateProfile(userId, body) {
   const currentUser = await userRepository.findUserById(userId);
   if (!currentUser) throw createError("Không tìm thấy người dùng.", 404);
 
-  const phone = normalizePhone(body.phone || currentUser.phone);
+  const phone = assertValidPhone(body.phone || currentUser.phone);
   const existingByPhone = await userRepository.findUserByPhone(phone);
   if (existingByPhone && existingByPhone._id.toString() !== currentUser._id.toString()) {
     throw createError("Số điện thoại đã được tài khoản khác sử dụng.", 409);
   }
 
-  const email = normalizeEmail(body.email ?? currentUser.email ?? "");
+  const email = assertValidEmail(body.email ?? currentUser.email ?? "", { required: false });
   if (email) {
     const existingByEmail = await userRepository.findUserByEmail(email);
     if (existingByEmail && existingByEmail._id.toString() !== currentUser._id.toString()) {
@@ -122,9 +114,7 @@ export async function updateProfile(userId, body) {
     avatarUrl: body.avatarUrl ?? currentUser.avatarUrl ?? ""
   };
 
-  if (!profile.fullName?.trim()) {
-    throw createError("Họ tên là bắt buộc.");
-  }
+  assertRequired(profile.fullName, "Họ tên");
 
   const user = await userRepository.updateUserProfile(userId, profile);
   return sanitizeUser(user);
@@ -146,8 +136,7 @@ export async function changePassword(userId, body) {
 }
 
 export async function requestPasswordReset(body) {
-  const email = normalizeEmail(body.email);
-  if (!email) throw createError("Email là bắt buộc.");
+  const email = assertValidEmail(body.email);
 
   const neutralMessage = "Nếu email tồn tại trong hệ thống, SmileCare sẽ gửi mã OTP đặt lại mật khẩu.";
   const user = await userRepository.findUserByEmail(email);
@@ -179,10 +168,8 @@ export async function requestPasswordReset(body) {
 }
 
 export async function resetPasswordWithOtp(body) {
-  const email = normalizeEmail(body.email);
-  const otp = String(body.otp || "").trim();
-  if (!email) throw createError("Email là bắt buộc.");
-  if (!/^\d{6}$/.test(otp)) throw createError("OTP gồm 6 chữ số.");
+  const email = assertValidEmail(body.email);
+  const otp = assertValidOtp(body.otp);
   assertValidPassword(body.newPassword);
 
   const user = await userRepository.findUserByEmail(email);

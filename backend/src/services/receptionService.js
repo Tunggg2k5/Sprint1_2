@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { toObjectId } from "../config/mongodb.js";
 import * as receptionRepository from "../repositories/receptionRepository.js";
+import { assertRequired, assertValidPhone } from "../utils/validation.js";
 import { createError, sanitizeUser } from "./authService.js";
 
 const queueStatuses = new Set(["confirmed", "checked_in", "in_treatment"]);
@@ -32,9 +33,8 @@ export function getRooms() {
 
 export async function createPatient(body = {}) {
   const fullName = String(body.fullName || "").trim();
-  const phone = normalizePhone(body.phone);
-  if (!fullName) throw createError("Ho ten benh nhan la bat buoc.");
-  if (!phone) throw createError("So dien thoai benh nhan la bat buoc.");
+  assertRequired(fullName, "Họ tên bệnh nhân");
+  const phone = assertValidPhone(body.phone);
 
   const duplicate = await receptionRepository.findUserByPhone(phone);
   if (duplicate) {
@@ -341,10 +341,6 @@ async function notifyPatient(appointment, title, message) {
     message,
     isRead: false
   });
-}
-
-function normalizePhone(phone = "") {
-  return String(phone).replace(/\s/g, "");
 }
 
 function statusLabel(status) {
